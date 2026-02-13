@@ -20,9 +20,16 @@ function progressChip(label: string, value: number, tone: 'slate' | 'blue' | 'gr
   return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}>{label}: {value}</span>;
 }
 
-export default async function ProjectDetails({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProjectDetails({
+  params,
+  searchParams
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ toast?: string; message?: string }>;
+}) {
   const user = await requireUser();
   const { id } = await params;
+  const { toast, message } = await searchParams;
 
   const project = await prisma.project.findFirst({
     where: { id, ownerId: user.id },
@@ -53,6 +60,16 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
               <li className="text-primary font-medium">{project.name}</li>
             </ol>
           </nav>
+
+          {message && (
+            <div
+              className={`rounded-lg border px-4 py-3 text-sm ${
+                toast === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-700'
+              }`}
+            >
+              {message}
+            </div>
+          )}
 
           <section className="bg-surface-light rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -87,8 +104,15 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-surface-light overflow-hidden rounded-xl border border-slate-200 shadow-sm">
               <div className="p-6 space-y-4">
-                <h3 className="text-base font-semibold text-slate-900">1) RFP hochladen</h3>
-                <p className="text-sm text-slate-500">Unterstützt: .txt, .md, .docx, .pdf (Basis-Extraktion mit Fallback).</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 h-11 w-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <span className="material-icons">upload_file</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">1) RFP hochladen</h3>
+                    <p className="text-sm text-slate-500">Unterstützt: .txt, .md, .docx, .pdf (Basis-Extraktion mit Fallback).</p>
+                  </div>
+                </div>
                 <form action={uploadRfpAction} className="space-y-3">
                   <input type="hidden" name="projectId" value={project.id} />
                   <input name="file" type="file" accept=".txt,.md,.docx,.pdf,text/plain,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required className="block w-full rounded-md border-slate-300 text-sm" />
@@ -101,8 +125,15 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
 
             <div className="bg-surface-light overflow-hidden rounded-xl border border-slate-200 shadow-sm">
               <div className="p-6 space-y-4">
-                <h3 className="text-base font-semibold text-slate-900">2) Drafts erzeugen</h3>
-                <p className="text-sm text-slate-500">Erstellt Entwürfe anhand Ihrer Answer Library für jede extrahierte Anforderung.</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex-shrink-0 h-11 w-11 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <span className="material-icons">auto_awesome</span>
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-slate-900">2) Drafts erzeugen</h3>
+                    <p className="text-sm text-slate-500">Erstellt Entwürfe anhand Ihrer Answer Library für jede extrahierte Anforderung.</p>
+                  </div>
+                </div>
                 <form action={generateDraftsAction}>
                   <input type="hidden" name="projectId" value={project.id} />
                   <SubmitButton className="inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50" pendingText="Generiere...">
@@ -157,6 +188,7 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
                         <td className="px-5 py-4 text-sm text-slate-500">
                           <form action={updateRequirementStatusAction} className="flex items-center gap-2">
                             <input type="hidden" name="id" value={r.id} />
+                            <input type="hidden" name="projectId" value={project.id} />
                             <select name="status" defaultValue={r.status} className="rounded-md border-slate-300 text-xs">
                               <option>TODO</option>
                               <option>DRAFTED</option>

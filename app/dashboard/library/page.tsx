@@ -7,10 +7,10 @@ import { prisma } from '@/lib/prisma';
 export default async function LibraryPage({
   searchParams
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; toast?: string; message?: string }>;
 }) {
   const user = await requireUser();
-  const { q } = await searchParams;
+  const { q, toast, message } = await searchParams;
 
   const answers = await prisma.answer.findMany({
     where: {
@@ -36,9 +36,27 @@ export default async function LibraryPage({
       </div>
 
       <main className="flex-grow py-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6">
-        <section className="bg-surface-light rounded-xl border border-slate-200 p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold text-slate-900">Answer Library</h1>
-          <p className="mt-1 text-sm text-slate-500">Textbausteine erstellen, durchsuchen, aktualisieren und löschen.</p>
+        {message && (
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm ${
+              toast === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-700'
+            }`}
+          >
+            {message}
+          </div>
+        )}
+
+        <section className="bg-surface-light rounded-xl border border-slate-200 p-6 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -mr-16 -mt-16" />
+          <div className="relative z-10 flex items-start gap-4">
+            <div className="flex-shrink-0 p-3 bg-primary/10 rounded-lg">
+              <span className="material-icons text-primary text-2xl">library_books</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900">Antwortbibliothek</h1>
+              <p className="mt-1 text-sm text-slate-500 max-w-2xl">Willkommen in Ihrer Antwortbibliothek. Speichern Sie wiederkehrende Textbausteine und beschleunigen Sie neue Ausschreibungen.</p>
+            </div>
+          </div>
         </section>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

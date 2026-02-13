@@ -22,8 +22,13 @@ function statusClasses(status: string) {
   return 'bg-slate-100 text-slate-700';
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams: Promise<{ toast?: string; message?: string }>;
+}) {
   const user = await requireUser();
+  const { toast, message } = await searchParams;
   const projects = await prisma.project.findMany({
     where: { ownerId: user.id },
     include: { requirements: true },
@@ -40,7 +45,17 @@ export default async function DashboardPage() {
         <Nav />
       </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {message && (
+          <div
+            className={`rounded-lg border px-4 py-3 text-sm ${
+              toast === 'success' ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-700'
+            }`}
+          >
+            {message}
+          </div>
+        )}
+
         <section className="bg-surface-light rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm">
           <div className="mb-6">
             <h1 className="text-xl font-semibold text-slate-900">So funktioniert RFP Copilot in 3 Schritten</h1>
@@ -71,7 +86,7 @@ export default async function DashboardPage() {
             ['Drafts generiert', 'edit_note', String(totalDrafts)],
             ['Library Einträge', 'storage', String(answerCount)]
           ].map((metric) => (
-            <div key={metric[0]} className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32">
+            <div key={metric[0]} className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32 hover:border-primary/40 transition-colors">
               <div className="flex justify-between items-start">
                 <p className="text-sm font-medium text-slate-500">{metric[0]}</p>
                 <span className="material-icons text-primary/60 text-xl">{metric[1]}</span>
@@ -97,11 +112,15 @@ export default async function DashboardPage() {
 
           {!projects.length ? (
             <div className="p-10 text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3">
-                <span className="material-icons">add</span>
+              <div className="mx-auto w-40 h-40 bg-primary/5 rounded-full flex items-center justify-center mb-5 relative overflow-hidden">
+                <div className="w-24 h-28 bg-white rounded-lg shadow border border-slate-100 -rotate-6 absolute" />
+                <div className="w-24 h-28 bg-primary/10 rounded-lg border border-primary/20 rotate-6 absolute" />
+                <div className="w-10 h-10 bg-primary rounded-full text-white flex items-center justify-center z-10">
+                  <span className="material-icons">add</span>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">Noch keine Projekte</h3>
-              <p className="text-sm text-slate-500 mt-1">Lege dein erstes Projekt an und lade eine .txt- oder .md-Datei hoch.</p>
+              <h3 className="text-xl font-semibold text-slate-900">Noch keine Projekte</h3>
+              <p className="text-sm text-slate-500 mt-2 max-w-sm mx-auto">Starten Sie Ihr erstes Ausschreibungsverfahren, um Angebote zu vergleichen und den besten Partner zu finden.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
