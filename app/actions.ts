@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { clearSession, login, register, requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { extractTextFromUpload } from '@/lib/file-extract';
 import { generateDraft, parseRfpText } from '@/lib/rfp-parser';
 
 export async function registerAction(formData: FormData) {
@@ -83,6 +84,42 @@ export async function addAnswerAction(formData: FormData) {
   revalidatePath('/dashboard/library');
 }
 
+export async function updateAnswerAction(formData: FormData) {
+  const user = await requireUser();
+  const schema = z.object({
+    id: z.string().trim().min(2),
+    questionKey: z.string().trim().min(2),
+    title: z.string().trim().min(2),
+    body: z.string().trim().min(10),
+    tags: z.string().trim().optional()
+  });
+
+  const parsed = schema.safeParse({
+    id: formData.get('id'),
+    questionKey: formData.get('questionKey'),
+    title: formData.get('title'),
+    body: formData.get('body'),
+    tags: formData.get('tags') || undefined
+  });
+
+  if (!parsed.success) {
+    revalidatePath('/dashboard/library');
+    return;
+  }
+
+  await prisma.answer.updateMany({
+    where: { id: parsed.data.id, ownerId: user.id },
+    data: {
+      questionKey: parsed.data.questionKey,
+      title: parsed.data.title,
+      body: parsed.data.body,
+      tags: parsed.data.tags || ''
+    }
+  });
+
+  revalidatePath('/dashboard/library');
+}
+
 export async function deleteAnswerAction(formData: FormData) {
   const user = await requireUser();
   const id = String(formData.get('id'));
@@ -96,13 +133,22 @@ export async function uploadRfpAction(formData: FormData) {
   const file = formData.get('file') as File | null;
   if (!file || !file.name) return;
 
-  const allowed = file.name.endsWith('.md') || file.name.endsWith('.txt') || ['text/plain', 'text/markdown', 'application/octet-stream'].includes(file.type);
-  if (!allowed) throw new Error('Only .txt/.md supported in MVP');
+  const allowedExtensions = ['.md', '.txt', '.docx', '.pdf'];
+  const lowerName = file.name.toLowerCase();
+  const isAllowed = allowedExtensions.some((ext) => lowerName.endsWith(ext));
+  if (!isAllowed) throw new Error('Unsupported file format. Use .txt, .md, .docx, or .pdf');
 
-  const text = await file.text();
-  const parsed = parseRfpText(text);
+  const extraction = await extractTextFromUpload(file);
+  const parsed = parseRfpText(extraction.text);
 
-  await prisma.project.updateMany({ where: { id: projectId, ownerId: user.id }, data: { rfpRawText: text, status: 'Parsed' } });
+  await prisma.project.updateMany({
+    where: { id: projectId, ownerId: user.id },
+    data: {
+      rfpRawText: extraction.warning ? `[Extraction notice] ${extraction.warning}\n\n${extraction.text}` : extraction.text,
+      status: parsed.length ? 'Parsed' : 'Intake'
+    }
+  });
+
   await prisma.projectRequirement.deleteMany({ where: { projectId, project: { ownerId: user.id } } });
   if (parsed.length) {
     await prisma.projectRequirement.createMany({
@@ -116,6 +162,7 @@ export async function uploadRfpAction(formData: FormData) {
       }))
     });
   }
+
   revalidatePath(`/dashboard/projects/${projectId}`);
 }
 
