@@ -14,45 +14,75 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
 
   if (!project) return <div className="container">Project not found</div>;
 
+  const draftedCount = project.requirements.filter((r) => !!r.draftAnswer).length;
+
   return (
     <div className="container grid">
       <Nav />
+
       <div className="card">
         <h2>{project.name}</h2>
-        <p>{project.description}</p>
-        <p>Status: <span className="badge">{project.status}</span></p>
+        <p className="small">{project.description || 'Keine Beschreibung'}</p>
+        <p className="small">Status: <span className="badge">{project.status}</span> · Anforderungen: <b>{project.requirements.length}</b> · Drafts: <b>{draftedCount}</b></p>
+      </div>
+
+      <div className="card hero-card">
+        <h3>Schnellstart für dieses Projekt</h3>
+        <div className="grid grid-3">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <h4>RFP hochladen</h4>
+            <p className="small">Datei im Format .txt oder .md.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <h4>Anforderungen prüfen</h4>
+            <p className="small">Nach Upload siehst du alle erkannten Anforderungen unten.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">3</div>
+            <h4>Entwürfe generieren</h4>
+            <p className="small">Erstellt für jede Anforderung einen ersten Antworttext.</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-2">
         <div className="card">
-          <h3>Upload RFP (.txt/.md)</h3>
+          <h3>1) RFP hochladen (.txt/.md)</h3>
           <form action={uploadRfpAction} className="grid">
             <input type="hidden" name="projectId" value={project.id} />
             <input name="file" type="file" accept=".txt,.md,text/plain,text/markdown" required />
-            <button type="submit">Parse Requirements</button>
+            <button type="submit">Datei analysieren</button>
           </form>
         </div>
+
         <div className="card">
-          <h3>Generate first drafts</h3>
-          <form action={generateDraftsAction}>
+          <h3>2) Drafts erstellen</h3>
+          <form action={generateDraftsAction} className="grid">
             <input type="hidden" name="projectId" value={project.id} />
-            <button type="submit">Generate Draft per Requirement</button>
+            <button type="submit">Draft pro Anforderung generieren</button>
           </form>
-          <p className="small">Uses answer library snippets + template.</p>
+          <p className="small">Nutzen: kombiniert Library-Bausteine + Template.</p>
         </div>
       </div>
 
       <div className="card">
-        <h3>Parsed Requirements ({project.requirements.length})</h3>
+        <h3>Erkannte Anforderungen ({project.requirements.length})</h3>
         <table className="table">
-          <thead><tr><th>Requirement</th><th>Deadline</th><th>Priority</th><th>Status</th></tr></thead>
+          <thead><tr><th>Anforderung</th><th>Deadline</th><th>Priorität</th><th>Status</th></tr></thead>
           <tbody>
             {project.requirements.map((r) => (
               <tr key={r.id}>
                 <td>
                   <b>{r.title}</b>
-                  <div>{r.details}</div>
-                  {r.draftAnswer && <pre style={{ whiteSpace: 'pre-wrap', background: '#f8fafc', padding: 10, borderRadius: 8 }}>{r.draftAnswer}</pre>}
+                  <div className="small" style={{ marginTop: 6 }}>{r.details}</div>
+                  {r.draftAnswer && (
+                    <div className="draft-box">
+                      <div className="small"><b>Draft:</b></div>
+                      <pre>{r.draftAnswer}</pre>
+                    </div>
+                  )}
                 </td>
                 <td>{r.deadline || '-'}</td>
                 <td><span className="badge">{r.priority}</span></td>
@@ -60,14 +90,17 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
                   <form action={updateRequirementStatusAction} className="grid">
                     <input type="hidden" name="id" value={r.id} />
                     <select name="status" defaultValue={r.status}>
-                      <option>TODO</option><option>DRAFTED</option><option>REVIEWED</option><option>SUBMITTED</option>
+                      <option>TODO</option>
+                      <option>DRAFTED</option>
+                      <option>REVIEWED</option>
+                      <option>SUBMITTED</option>
                     </select>
-                    <button className="secondary">Update</button>
+                    <button className="secondary">Status speichern</button>
                   </form>
                 </td>
               </tr>
             ))}
-            {!project.requirements.length && <tr><td colSpan={4}>Upload an RFP to extract requirements.</td></tr>}
+            {!project.requirements.length && <tr><td colSpan={4}>Noch keine Anforderungen. Lade zuerst eine RFP-Datei hoch.</td></tr>}
           </tbody>
         </table>
       </div>
