@@ -13,12 +13,12 @@ function initials(name: string) {
     .toUpperCase();
 }
 
-function statusClass(status: string) {
-  if (status === 'TODO') return 's-todo';
-  if (status === 'DRAFTED') return 's-drafted';
-  if (status === 'REVIEWED') return 's-reviewed';
-  if (status === 'SUBMITTED') return 's-submitted';
-  return 's-default';
+function statusClasses(status: string) {
+  if (status === 'TODO') return 'bg-yellow-100 text-yellow-800';
+  if (status === 'DRAFTED') return 'bg-blue-100 text-blue-800';
+  if (status === 'REVIEWED') return 'bg-green-100 text-green-800';
+  if (status === 'SUBMITTED') return 'bg-indigo-100 text-indigo-800';
+  return 'bg-slate-100 text-slate-700';
 }
 
 export default async function DashboardPage() {
@@ -34,98 +34,137 @@ export default async function DashboardPage() {
   const answerCount = await prisma.answer.count({ where: { ownerId: user.id } });
 
   return (
-    <div className="container grid">
-      <Nav />
+    <div className="min-h-screen flex flex-col">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <Nav />
+      </div>
 
-      <section className="card hero-card">
-        <h2>So funktioniert RFP Copilot in 3 Schritten</h2>
-        <p className="small">Ihr persönlicher Assistent für effizientes Ausschreibungsmanagement.</p>
-        <div className="grid grid-3">
-          <article className="step-card fancy">
-            <div className="step-number">1</div>
-            <h4>Answer Library füllen</h4>
-            <p className="small">Speichere Standardantworten für Security, DSGVO, SLA und mehr.</p>
-            <Link className="inline-link" href="/dashboard/library">Zur Bibliothek →</Link>
-          </article>
-          <article className="step-card fancy">
-            <div className="step-number">2</div>
-            <h4>Projekt anlegen</h4>
-            <p className="small">Lade neue RFP-Dateien hoch und extrahiere Anforderungen automatisch.</p>
-          </article>
-          <article className="step-card fancy">
-            <div className="step-number">3</div>
-            <h4>Entwürfe generieren</h4>
-            <p className="small">Erhalte Drafts auf Basis deiner Library – pro Anforderung.</p>
-          </article>
-        </div>
-      </section>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-8">
+        <section className="bg-surface-light rounded-xl border border-slate-200 p-6 md:p-8 shadow-sm">
+          <div className="mb-6">
+            <h1 className="text-xl font-semibold text-slate-900">So funktioniert RFP Copilot in 3 Schritten</h1>
+            <p className="text-slate-500 mt-1">Ihr persönlicher Assistent für effizientes Ausschreibungsmanagement.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="relative group p-5 rounded-lg border border-slate-100 bg-slate-50 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+              <div className="absolute top-5 right-5 text-slate-200 text-6xl font-bold opacity-20 select-none">1</div>
+              <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                <span className="material-icons">library_books</span>
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">Answer Library füllen</h3>
+              <p className="text-sm text-slate-500">Lade vergangene Ausschreibungen und Unternehmensdaten hoch, um die Wissensbasis zu trainieren.</p>
+            </div>
+            <div className="relative group p-5 rounded-lg border border-slate-100 bg-slate-50 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+              <div className="absolute top-5 right-5 text-slate-200 text-6xl font-bold opacity-20 select-none">2</div>
+              <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                <span className="material-icons">create_new_folder</span>
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">Projekt anlegen</h3>
+              <p className="text-sm text-slate-500">Importiere neue RFP-Dokumente. Die KI extrahiert automatisch alle Anforderungen.</p>
+            </div>
+            <div className="relative group p-5 rounded-lg border border-slate-100 bg-slate-50 hover:border-primary/30 hover:shadow-md transition-all duration-300">
+              <div className="absolute top-5 right-5 text-slate-200 text-6xl font-bold opacity-20 select-none">3</div>
+              <div className="h-12 w-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                <span className="material-icons">auto_fix_high</span>
+              </div>
+              <h3 className="text-lg font-medium text-slate-900 mb-2">Entwürfe generieren</h3>
+              <p className="text-sm text-slate-500">Lassen Sie sich passende Antwortvorschläge basierend auf Ihrer Library erstellen.</p>
+            </div>
+          </div>
+        </section>
 
-      <section className="grid grid-2">
-        <div className="card">
-          <h3>Neues Projekt</h3>
-          <form action={createProjectAction} className="grid">
-            <input name="name" placeholder="Projektname (z. B. Stadtwerke Berlin 2026)" required />
-            <textarea name="description" placeholder="Kurzbeschreibung (optional)" rows={3} />
-            <button type="submit">Projekt erstellen</button>
-          </form>
-        </div>
-
-        <div className="grid grid-2">
-          <div className="metric-card"><small>Aktive Projekte</small><strong>{projects.length}</strong></div>
-          <div className="metric-card"><small>Anforderungen</small><strong>{totalRequirements}</strong></div>
-          <div className="metric-card"><small>Drafts generiert</small><strong>{totalDrafts}</strong></div>
-          <div className="metric-card"><small>Library Einträge</small><strong>{answerCount}</strong></div>
-        </div>
-      </section>
-
-      <section className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-          <div>
-            <h3>Aktuelle Projekte</h3>
-            <p className="small">Verwalte und verfolge laufende Ausschreibungen.</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium text-slate-500">Aktive Projekte</p>
+              <span className="material-icons text-primary/60 text-xl">folder_open</span>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{projects.length}</p>
+          </div>
+          <div className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium text-slate-500">Anforderungen</p>
+              <span className="material-icons text-primary/60 text-xl">list_alt</span>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{totalRequirements}</p>
+          </div>
+          <div className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium text-slate-500">Drafts generiert</p>
+              <span className="material-icons text-primary/60 text-xl">edit_note</span>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{totalDrafts}</p>
+          </div>
+          <div className="bg-surface-light p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between h-32">
+            <div className="flex justify-between items-start">
+              <p className="text-sm font-medium text-slate-500">Library Einträge</p>
+              <span className="material-icons text-primary/60 text-xl">storage</span>
+            </div>
+            <p className="text-3xl font-bold text-slate-900">{answerCount}</p>
           </div>
         </div>
 
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Projekt</th>
-              <th>Status</th>
-              <th>Fortschritt</th>
-              <th>Zuletzt aktualisiert</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map((p) => {
-              const total = p.requirements.length;
-              const done = p.requirements.filter((r) => r.status === 'REVIEWED' || r.status === 'SUBMITTED').length;
-              const percent = total ? Math.round((done / total) * 100) : 0;
-              return (
-                <tr key={p.id}>
-                  <td>
-                    <Link href={`/dashboard/projects/${p.id}`}>
-                      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        <span className="avatar">{initials(p.name)}</span>
-                        <div>
-                          <div style={{ fontWeight: 600 }}>{p.name}</div>
-                          <div className="small">{p.description || 'Ohne Beschreibung'}</div>
-                        </div>
-                      </div>
-                    </Link>
-                  </td>
-                  <td><span className={`badge ${statusClass(p.status)}`}>{p.status}</span></td>
-                  <td style={{ minWidth: 190 }}>
-                    <div className="progress"><span style={{ width: `${percent}%` }} /></div>
-                    <span className="small">{done}/{total || 0} erledigt</span>
-                  </td>
-                  <td>{new Date(p.updatedAt).toLocaleString()}</td>
+        <section className="bg-surface-light rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">Aktuelle Projekte</h2>
+              <p className="text-sm text-slate-500">Verwalten und verfolgen Sie Ihre laufenden Ausschreibungen.</p>
+            </div>
+            <form action={createProjectAction} className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+              <input name="name" placeholder="Projektname" required className="w-full sm:w-auto" />
+              <button className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-sm w-full sm:w-auto">Projekt erstellen</button>
+            </form>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 font-medium">
+                  <th className="px-6 py-4">Projekt</th>
+                  <th className="px-6 py-4">Status</th>
+                  <th className="px-6 py-4">Fortschritt</th>
+                  <th className="px-6 py-4 text-right">Zuletzt aktualisiert</th>
                 </tr>
-              );
-            })}
-            {!projects.length && <tr><td colSpan={4}>Noch keine Projekte. Lege oben dein erstes Projekt an.</td></tr>}
-          </tbody>
-        </table>
-      </section>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {projects.map((p) => {
+                  const total = p.requirements.length;
+                  const done = p.requirements.filter((r) => r.status === 'REVIEWED' || r.status === 'SUBMITTED').length;
+                  const percent = total ? Math.round((done / total) * 100) : 0;
+                  return (
+                    <tr key={p.id} className="hover:bg-slate-50 transition-colors group">
+                      <td className="px-6 py-4">
+                        <Link href={`/dashboard/projects/${p.id}`} className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">{initials(p.name)}</div>
+                          <div>
+                            <div className="font-medium text-slate-900">{p.name}</div>
+                            <div className="text-xs text-slate-500">{p.description || 'Ohne Beschreibung'}</div>
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusClasses(p.status)}`}>{p.status}</span>
+                      </td>
+                      <td className="px-6 py-4 w-48">
+                        <div className="w-full bg-slate-200 rounded-full h-1.5 mb-1">
+                          <div className="bg-primary h-1.5 rounded-full" style={{ width: `${percent}%` }} />
+                        </div>
+                        <span className="text-xs text-slate-500">{done}/{total || 0} Aufgaben</span>
+                      </td>
+                      <td className="px-6 py-4 text-right text-sm text-slate-500">{new Date(p.updatedAt).toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
+                {!projects.length && (
+                  <tr>
+                    <td className="px-6 py-6 text-sm text-slate-500" colSpan={4}>Noch keine Projekte. Erstelle oben dein erstes Projekt.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
