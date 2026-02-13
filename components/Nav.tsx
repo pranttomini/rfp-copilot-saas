@@ -1,7 +1,18 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/actions';
 
+function itemClass(active: boolean) {
+  return active
+    ? 'border-b-2 border-primary text-primary px-3 py-5 text-sm font-medium'
+    : 'border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-3 py-5 text-sm font-medium transition-colors';
+}
+
 export function Nav() {
+  const pathname = usePathname();
+
   return (
     <nav className="sticky top-0 z-50 bg-surface-light/80 backdrop-blur-md border-b border-slate-200 rounded-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -14,8 +25,9 @@ export function Nav() {
               <span className="font-bold text-lg tracking-tight text-slate-900">RFP Copilot</span>
             </Link>
             <div className="hidden md:flex md:space-x-1">
-              <Link className="border-b-2 border-primary text-primary px-3 py-5 text-sm font-medium" href="/dashboard">Dashboard</Link>
-              <Link className="border-b-2 border-transparent text-slate-500 hover:text-slate-700 px-3 py-5 text-sm font-medium transition-colors" href="/dashboard/library">Answer Library</Link>
+              <Link className={itemClass(pathname === '/dashboard')} href="/dashboard">Dashboard</Link>
+              <Link className={itemClass(pathname.startsWith('/dashboard/projects'))} href="/dashboard">Projekte</Link>
+              <Link className={itemClass(pathname.startsWith('/dashboard/library'))} href="/dashboard/library">Answer Library</Link>
             </div>
           </div>
           <div className="flex items-center gap-3 pl-4">

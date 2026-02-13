@@ -5,52 +5,61 @@ Production-minded prototype for managing RFP responses with fast drafting suppor
 ## Stack
 
 - **Next.js 15** (App Router + Server Actions)
-- **Prisma + SQLite** (easy local dev; swap to Postgres for production)
+- **Prisma + SQLite**
 - **Local auth** (email/password + signed httpOnly session cookie)
-- Plain clean CSS UI
 
-## Features implemented
+## Features
 
 - User auth (register/login/logout)
-- Dashboard with project creation and summary stats
-- Project detail page with RFP upload (`.txt`, `.md`)
-- Heuristic parser for extracting requirements + potential deadlines
-- Answer Library CRUD (create/delete snippets)
-- Generate first draft answer per requirement using template + snippet matching
+- Dashboard with project creation and KPIs
+- Project detail with RFP upload (`.txt`, `.md`), requirement extraction, draft generation
+- Answer Library CRUD (create/delete snippets + search)
 - Requirement status tracking (`TODO`, `DRAFTED`, `REVIEWED`, `SUBMITTED`)
-- Seeded demo account + demo project
+- Demo seed account
 
-## Quick start
+## Local setup
 
 ```bash
 cd rfp-copilot-saas
 cp .env.example .env
 npm install
-npx prisma db push
+npm run db:push
 npm run db:seed
+```
+
+## Start app
+
+### Development
+
+```bash
 npm run dev
 ```
 
 Open: http://localhost:3000
 
-## Demo account
+### Production-like run
+
+```bash
+npm run build
+npm run start
+```
+
+## Demo login
 
 - **Email:** `demo@rfpcopilot.local`
 - **Password:** `demo1234`
 
+## Smoke test checklist
+
+1. Login with demo account
+2. Create a new project from dashboard
+3. Open project and upload a `.txt` or `.md` RFP file
+4. Generate drafts
+5. Open Answer Library and add new entry
+6. Delete the entry again
+
 ## Environment
 
-See `.env.example`:
-
 - `DATABASE_URL` - Prisma database URL
-- `APP_URL` - app URL for env parity
+- `APP_URL` - app URL
 - `SESSION_SECRET` - strong random secret in production
-
-## Notes for production hardening (next)
-
-1. Replace SQLite with Postgres + Prisma migrations
-2. Add CSRF protection + secure cookie flags + session expiry/rotation
-3. Add file type scanning and DOCX/PDF text extraction pipeline
-4. Add richer parser (NER + classifier) and confidence scores
-5. Add versioning/workflow approvals and audit logs
-6. Add tests (unit + integration + e2e)

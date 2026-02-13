@@ -9,12 +9,15 @@ import { generateDraft, parseRfpText } from '@/lib/rfp-parser';
 
 export async function registerAction(formData: FormData) {
   const schema = z.object({ email: z.string().email(), password: z.string().min(6), name: z.string().optional() });
-  const parsed = schema.parse({
+  const parsed = schema.safeParse({
     email: formData.get('email'),
     password: formData.get('password'),
     name: formData.get('name') || undefined
   });
-  await register(parsed.email, parsed.password, parsed.name);
+
+  if (!parsed.success) redirect('/register?error=invalid');
+
+  await register(parsed.data.email, parsed.data.password, parsed.data.name);
   redirect('/dashboard');
 }
 
@@ -33,21 +36,48 @@ export async function logoutAction() {
 
 export async function createProjectAction(formData: FormData) {
   const user = await requireUser();
-  const name = String(formData.get('name') || 'Untitled Project');
-  const description = String(formData.get('description') || '');
-  await prisma.project.create({ data: { name, description, ownerId: user.id } });
+  const schema = z.object({ name: z.string().trim().min(2).max(120), description: z.string().trim().max(400).optional() });
+  const parsed = schema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description') || undefined
+  });
+
+  if (!parsed.success) {
+    revalidatePath('/dashboard');
+    return;
+  }
+
+  await prisma.project.create({ data: { name: parsed.data.name, description: parsed.data.description, ownerId: user.id } });
   revalidatePath('/dashboard');
 }
 
 export async function addAnswerAction(formData: FormData) {
   const user = await requireUser();
+  const schema = z.object({
+    questionKey: z.string().trim().min(2),
+    title: z.string().trim().min(2),
+    body: z.string().trim().min(10),
+    tags: z.string().trim().optional()
+  });
+  const parsed = schema.safeParse({
+    questionKey: formData.get('questionKey'),
+    title: formData.get('title'),
+    body: formData.get('body'),
+    tags: formData.get('tags') || undefined
+  });
+
+  if (!parsed.success) {
+    revalidatePath('/dashboard/library');
+    return;
+  }
+
   await prisma.answer.create({
     data: {
       ownerId: user.id,
-      questionKey: String(formData.get('questionKey') || '').trim(),
-      title: String(formData.get('title') || '').trim(),
-      body: String(formData.get('body') || '').trim(),
-      tags: String(formData.get('tags') || '').trim()
+      questionKey: parsed.data.questionKey,
+      title: parsed.data.title,
+      body: parsed.data.body,
+      tags: parsed.data.tags || ''
     }
   });
   revalidatePath('/dashboard/library');
@@ -63,17 +93,17 @@ export async function deleteAnswerAction(formData: FormData) {
 export async function uploadRfpAction(formData: FormData) {
   const user = await requireUser();
   const projectId = String(formData.get('projectId'));
-  const file = formData.get('file') as File;
-  if (!file) return;
-  if (!['text/plain', 'text/markdown', 'application/octet-stream'].includes(file.type) && !file.name.endsWith('.md') && !file.name.endsWith('.txt')) {
-    throw new Error('Only .txt/.md supported in MVP');
-  }
+  const file = formData.get('file') as File | null;
+  if (!file || !file.name) return;
+
+  const allowed = file.name.endsWith('.md') || file.name.endsWith('.txt') || ['text/plain', 'text/markdown', 'application/octet-stream'].includes(file.type);
+  if (!allowed) throw new Error('Only .txt/.md supported in MVP');
 
   const text = await file.text();
   const parsed = parseRfpText(text);
 
   await prisma.project.updateMany({ where: { id: projectId, ownerId: user.id }, data: { rfpRawText: text, status: 'Parsed' } });
-  await prisma.projectRequirement.deleteMany({ where: { projectId } });
+  await prisma.projectRequirement.deleteMany({ where: { projectId, project: { ownerId: user.id } } });
   if (parsed.length) {
     await prisma.projectRequirement.createMany({
       data: parsed.map((p) => ({
@@ -94,7 +124,7 @@ export async function generateDraftsAction(formData: FormData) {
   const projectId = String(formData.get('projectId'));
 
   const [requirements, answers] = await Promise.all([
-    prisma.projectRequirement.findMany({ where: { projectId }, orderBy: { title: 'asc' } }),
+    prisma.projectRequirement.findMany({ where: { projectId, project: { ownerId: user.id } }, orderBy: { title: 'asc' } }),
     prisma.answer.findMany({ where: { ownerId: user.id } })
   ]);
 
@@ -111,9 +141,15 @@ export async function generateDraftsAction(formData: FormData) {
 }
 
 export async function updateRequirementStatusAction(formData: FormData) {
+  const user = await requireUser();
   const id = String(formData.get('id'));
   const status = String(formData.get('status'));
-  await requireUser();
-  await prisma.projectRequirement.update({ where: { id }, data: { status } });
+  if (!['TODO', 'DRAFTED', 'REVIEWED', 'SUBMITTED'].includes(status)) return;
+
+  await prisma.projectRequirement.updateMany({
+    where: { id, project: { ownerId: user.id } },
+    data: { status }
+  });
+
   revalidatePath('/dashboard');
 }

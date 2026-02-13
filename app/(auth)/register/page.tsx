@@ -1,7 +1,9 @@
 import Link from 'next/link';
 import { registerAction } from '@/app/actions';
 
-export default function RegisterPage() {
+export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  const params = await searchParams;
+
   return (
     <div className="auth-wrap">
       <div className="auth-bg" />
@@ -15,6 +17,8 @@ export default function RegisterPage() {
           <h1>Konto erstellen</h1>
           <p>In 1 Minute startklar für dein erstes RFP-Projekt.</p>
         </div>
+
+        {params.error && <p className="auth-error">Bitte prüfe deine Eingaben (E-Mail / Passwort).</p>}
 
         <form action={registerAction} className="grid auth-form">
           <label>
