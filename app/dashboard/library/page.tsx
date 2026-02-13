@@ -12,44 +12,50 @@ export default async function LibraryPage() {
       <Nav />
 
       <div className="card hero-card">
-        <h2>Answer Library</h2>
-        <p className="small">Hier hinterlegst du wiederverwendbare Standardantworten (z. B. DSGVO, Security, SLA). Diese werden beim Draft-Generator automatisch genutzt.</p>
+        <h2>Antwortbibliothek</h2>
+        <p className="small">Verwalte wiederkehrende Textbausteine. Diese werden beim Drafting automatisch vorgeschlagen.</p>
       </div>
 
-      <div className="card">
-        <h3>Neuen Baustein speichern</h3>
-        <form action={addAnswerAction} className="grid">
-          <input name="questionKey" placeholder="Schlüssel (z. B. dsgvo-compliance)" required />
-          <input name="title" placeholder="Titel (z. B. Datenschutzkonzept)" required />
-          <input name="tags" placeholder="Tags, durch Komma getrennt" />
-          <textarea name="body" rows={5} placeholder="Antworttext" required />
-          <button type="submit">Baustein speichern</button>
-        </form>
-      </div>
+      <div className="grid lib-layout">
+        <aside className="card" style={{ position: 'sticky', top: 90 }}>
+          <h3>Neuen Baustein hinzufügen</h3>
+          <form action={addAnswerAction} className="grid">
+            <input name="questionKey" placeholder="Schlüssel (z. B. dsgvo-compliance)" required />
+            <input name="title" placeholder="Titel" required />
+            <input name="tags" placeholder="Tags (Komma-getrennt)" />
+            <textarea name="body" rows={6} placeholder="Antworttext" required />
+            <button type="submit">Baustein speichern</button>
+          </form>
+        </aside>
 
-      <div className="card">
-        <h3>Gespeicherte Bausteine</h3>
-        <table className="table">
-          <thead><tr><th>Titel</th><th>Tags</th><th></th></tr></thead>
-          <tbody>
-            {answers.map((a) => (
-              <tr key={a.id}>
-                <td>
-                  <b>{a.title}</b>
-                  <div className="small" style={{ marginTop: 6 }}>{a.body}</div>
-                </td>
-                <td>{a.tags || '-'}</td>
-                <td>
-                  <form action={deleteAnswerAction}>
-                    <input type="hidden" name="id" value={a.id} />
-                    <button className="secondary">Löschen</button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-            {!answers.length && <tr><td colSpan={3}>Noch keine Bausteine gespeichert.</td></tr>}
-          </tbody>
-        </table>
+        <section className="card">
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+            <h3>Gespeicherte Bausteine</h3>
+            <input placeholder="Durchsuchen..." style={{ maxWidth: 220 }} readOnly />
+          </div>
+
+          <table className="table">
+            <thead><tr><th>Titel</th><th>Tags</th><th></th></tr></thead>
+            <tbody>
+              {answers.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    <div style={{ fontWeight: 600 }}>{a.title}</div>
+                    <div className="small" style={{ marginTop: 5 }}>{a.body}</div>
+                  </td>
+                  <td>{a.tags || '-'}</td>
+                  <td>
+                    <form action={deleteAnswerAction}>
+                      <input type="hidden" name="id" value={a.id} />
+                      <button className="secondary">Löschen</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+              {!answers.length && <tr><td colSpan={3}>Noch keine Bausteine gespeichert.</td></tr>}
+            </tbody>
+          </table>
+        </section>
       </div>
     </div>
   );

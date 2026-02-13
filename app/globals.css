@@ -169,3 +169,64 @@ button.secondary { background: #e5e7eb; color: #111; }
 .auth-foot { margin: 18px 0 0; text-align: center; font-size: 14px; color: #64748b; }
 .auth-foot a { margin-left: 6px; color: #1d4fd7; font-weight: 600; }
 .auth-trust { text-align:center; margin-top:16px; color:#94a3b8; font-size:11px; letter-spacing:.04em; text-transform:uppercase; }
+
+.metric-card {
+  background: #fff;
+  border: 1px solid #e7e7ef;
+  border-radius: 12px;
+  padding: 14px;
+}
+.metric-card small { color: #64748b; display: block; margin-bottom: 4px; }
+.metric-card strong { font-size: 28px; line-height: 1.1; }
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #e8efff;
+  color: #1d4fd7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+}
+.progress {
+  width: 100%;
+  background: #e2e8f0;
+  border-radius: 999px;
+  height: 6px;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: #1d4fd7;
+}
+
+.s-todo { background: #fef3c7; color: #92400e; }
+.s-drafted { background: #dbeafe; color: #1e40af; }
+.s-reviewed { background: #dcfce7; color: #166534; }
+.s-submitted { background: #e0e7ff; color: #4338ca; }
+.s-default { background: #e5e7eb; color: #374151; }
+
+.fancy { position: relative; overflow: hidden; }
+.fancy::after {
+  content: '';
+  position: absolute;
+  right: -20px;
+  top: -18px;
+  font-size: 64px;
+  font-weight: 700;
+  color: rgba(15, 23, 42, 0.04);
+}
+
+.lib-layout {
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  align-items: start;
+}
+
+@media (max-width: 980px) {
+  .lib-layout { grid-template-columns: 1fr; }
+}
