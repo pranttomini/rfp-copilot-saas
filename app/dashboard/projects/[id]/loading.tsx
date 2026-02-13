@@ -1,12 +1,19 @@
+import { Nav } from '@/components/Nav';
+
 export default function ProjectLoading() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4">
-      <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
-        <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+    <div className="min-h-screen flex flex-col">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <Nav />
       </div>
-      <div className="h-80 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-4 w-full">
+        <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+          <div className="h-44 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+        </div>
+        <div className="h-80 rounded-xl border border-slate-200 bg-white animate-shimmer" />
+      </main>
     </div>
   );
 }
