@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { generateDraftsAction, updateRequirementStatusAction, uploadRfpAction } from '@/app/actions';
 import { Nav } from '@/components/Nav';
 import { requireUser } from '@/lib/auth';
@@ -21,35 +22,39 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
       <Nav />
 
       <div className="card">
+        <p className="small" style={{ marginBottom: 6 }}><Link href="/dashboard">Dashboard</Link> / Projekt</p>
         <h2>{project.name}</h2>
         <p className="small">{project.description || 'Keine Beschreibung'}</p>
-        <p className="small">Status: <span className="badge">{project.status}</span> · Anforderungen: <b>{project.requirements.length}</b> · Drafts: <b>{draftedCount}</b></p>
+        <p className="small">
+          Status: <span className="badge">{project.status}</span> · Anforderungen: <b>{project.requirements.length}</b> · Drafts: <b>{draftedCount}</b>
+        </p>
       </div>
 
       <div className="card hero-card">
         <h3>Schnellstart für dieses Projekt</h3>
+        <p className="small">Einfacher Ablauf: Upload → Analyse → Drafting.</p>
         <div className="grid grid-3">
-          <div className="step-card">
+          <div className="step-card fancy">
             <div className="step-number">1</div>
             <h4>RFP hochladen</h4>
             <p className="small">Datei im Format .txt oder .md.</p>
           </div>
-          <div className="step-card">
+          <div className="step-card fancy">
             <div className="step-number">2</div>
             <h4>Anforderungen prüfen</h4>
-            <p className="small">Nach Upload siehst du alle erkannten Anforderungen unten.</p>
+            <p className="small">Automatisch erkannte Anforderungen im Überblick.</p>
           </div>
-          <div className="step-card">
+          <div className="step-card fancy">
             <div className="step-number">3</div>
             <h4>Entwürfe generieren</h4>
-            <p className="small">Erstellt für jede Anforderung einen ersten Antworttext.</p>
+            <p className="small">Erster Antwortentwurf für jede Anforderung.</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-2">
         <div className="card">
-          <h3>1) RFP hochladen (.txt/.md)</h3>
+          <h3>1) RFP hochladen</h3>
           <form action={uploadRfpAction} className="grid">
             <input type="hidden" name="projectId" value={project.id} />
             <input name="file" type="file" accept=".txt,.md,text/plain,text/markdown" required />
@@ -63,47 +68,56 @@ export default async function ProjectDetails({ params }: { params: Promise<{ id:
             <input type="hidden" name="projectId" value={project.id} />
             <button type="submit">Draft pro Anforderung generieren</button>
           </form>
-          <p className="small">Nutzen: kombiniert Library-Bausteine + Template.</p>
+          <p className="small">Verwendet automatisch deine Library-Bausteine.</p>
         </div>
       </div>
 
-      <div className="card">
-        <h3>Erkannte Anforderungen ({project.requirements.length})</h3>
-        <table className="table">
-          <thead><tr><th>Anforderung</th><th>Deadline</th><th>Priorität</th><th>Status</th></tr></thead>
-          <tbody>
-            {project.requirements.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  <b>{r.title}</b>
-                  <div className="small" style={{ marginTop: 6 }}>{r.details}</div>
-                  {r.draftAnswer && (
-                    <div className="draft-box">
-                      <div className="small"><b>Draft:</b></div>
-                      <pre>{r.draftAnswer}</pre>
-                    </div>
-                  )}
-                </td>
-                <td>{r.deadline || '-'}</td>
-                <td><span className="badge">{r.priority}</span></td>
-                <td>
-                  <form action={updateRequirementStatusAction} className="grid">
-                    <input type="hidden" name="id" value={r.id} />
-                    <select name="status" defaultValue={r.status}>
-                      <option>TODO</option>
-                      <option>DRAFTED</option>
-                      <option>REVIEWED</option>
-                      <option>SUBMITTED</option>
-                    </select>
-                    <button className="secondary">Status speichern</button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-            {!project.requirements.length && <tr><td colSpan={4}>Noch keine Anforderungen. Lade zuerst eine RFP-Datei hoch.</td></tr>}
-          </tbody>
-        </table>
-      </div>
+      {!!project.requirements.length && (
+        <div className="card">
+          <h3>Erkannte Anforderungen ({project.requirements.length})</h3>
+          <table className="table">
+            <thead><tr><th>Anforderung</th><th>Deadline</th><th>Priorität</th><th>Status</th></tr></thead>
+            <tbody>
+              {project.requirements.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    <b>{r.title}</b>
+                    <div className="small" style={{ marginTop: 6 }}>{r.details}</div>
+                    {r.draftAnswer && (
+                      <div className="draft-box">
+                        <div className="small"><b>Draft:</b></div>
+                        <pre>{r.draftAnswer}</pre>
+                      </div>
+                    )}
+                  </td>
+                  <td>{r.deadline || '-'}</td>
+                  <td><span className="badge">{r.priority}</span></td>
+                  <td>
+                    <form action={updateRequirementStatusAction} className="grid">
+                      <input type="hidden" name="id" value={r.id} />
+                      <select name="status" defaultValue={r.status}>
+                        <option>TODO</option>
+                        <option>DRAFTED</option>
+                        <option>REVIEWED</option>
+                        <option>SUBMITTED</option>
+                      </select>
+                      <button className="secondary">Status speichern</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {!project.requirements.length && (
+        <div className="card empty-state">
+          <div className="empty-circle">+</div>
+          <h3>Noch keine Anforderungen</h3>
+          <p className="small">Lade jetzt deine erste RFP-Datei hoch, damit wir Anforderungen extrahieren und Drafts erzeugen können.</p>
+        </div>
+      )}
     </div>
   );
 }
