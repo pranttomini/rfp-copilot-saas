@@ -1,5 +1,8 @@
 import './globals.css';
 import type { ReactNode } from 'react';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'RFP Copilot SaaS',
@@ -12,7 +15,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
@@ -38,7 +40,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
       </head>
-      <body className="bg-background-light font-display text-slate-800 antialiased">{children}</body>
+      <body className={`${inter.className} bg-background-light text-slate-800 antialiased`}>{children}</body>
     </html>
   );
 }
