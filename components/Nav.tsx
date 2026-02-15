@@ -26,7 +26,7 @@ export function Nav() {
             </Link>
             <div className="hidden md:flex md:space-x-1">
               <Link className={itemClass(pathname === '/dashboard')} href="/dashboard">Dashboard</Link>
-              <Link className={itemClass(pathname.startsWith('/dashboard/projects'))} href="/dashboard">Projekte</Link>
+              <Link className={itemClass(pathname.startsWith('/dashboard/projects'))} href="/dashboard/projects">Projekte</Link>
               <Link className={itemClass(pathname.startsWith('/dashboard/library'))} href="/dashboard/library">Answer Library</Link>
             </div>
           </div>
