@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { logoutAction } from '@/app/actions';
 
@@ -18,16 +17,16 @@ export function Nav() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center gap-8">
-            <Link href="/dashboard" className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
+            <a href="/dashboard" className="flex-shrink-0 flex items-center gap-2 cursor-pointer">
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
                 <span className="material-icons text-xl">auto_awesome</span>
               </div>
               <span className="font-bold text-lg tracking-tight text-slate-900">RFP Copilot</span>
-            </Link>
+            </a>
             <div className="hidden md:flex md:space-x-1">
-              <Link className={itemClass(pathname === '/dashboard')} href="/dashboard">Dashboard</Link>
-              <Link className={itemClass(pathname.startsWith('/dashboard/projects'))} href="/dashboard/projects">Projekte</Link>
-              <Link className={itemClass(pathname.startsWith('/dashboard/library'))} href="/dashboard/library">Answer Library</Link>
+              <a className={itemClass(pathname === '/dashboard')} href="/dashboard">Dashboard</a>
+              <a className={itemClass(pathname.startsWith('/dashboard/projects'))} href="/dashboard/projects">Projekte</a>
+              <a className={itemClass(pathname.startsWith('/dashboard/library'))} href="/dashboard/library">Answer Library</a>
             </div>
           </div>
           <div className="flex items-center gap-3 pl-4">
