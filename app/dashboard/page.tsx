@@ -5,6 +5,7 @@ import { SubmitButton } from '@/components/SubmitButton';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { statusClasses } from '@/lib/status';
+import { formatDateTime } from '@/lib/formatDate';
 
 function initials(name: string) {
   return name
@@ -151,7 +152,7 @@ export default async function DashboardPage({
                           </div>
                           <span className="text-xs text-slate-500">{done}/{total || 0} Aufgaben</span>
                         </td>
-                        <td className="px-6 py-4 text-right text-sm text-slate-500">{new Date(p.updatedAt).toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right text-sm text-slate-500">{formatDateTime(p.updatedAt)}</td>
                       </tr>
                     );
                   })}

@@ -3,6 +3,7 @@ import { Nav } from '@/components/Nav';
 import { SubmitButton } from '@/components/SubmitButton';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { formatDateTime } from '@/lib/formatDate';
 
 export default async function LibraryPage({
   searchParams
@@ -117,7 +118,7 @@ export default async function LibraryPage({
                             <input name="tags" defaultValue={a.tags} placeholder="Tags" className="w-full rounded-md border-slate-300 text-xs" />
                             <textarea name="body" defaultValue={a.body} rows={5} className="w-full rounded-md border-slate-300 text-sm" />
                             <div className="flex items-center justify-between gap-3">
-                              <div className="text-xs text-slate-400">Zuletzt aktualisiert: {new Date(a.updatedAt).toLocaleString('de-DE')}</div>
+                              <div className="text-xs text-slate-400">Zuletzt aktualisiert: {formatDateTime(a.updatedAt)}</div>
                               <SubmitButton className="inline-flex items-center px-3 py-1.5 text-xs rounded-md bg-primary text-white hover:bg-primary-hover" pendingText="...">Aktualisieren</SubmitButton>
                             </div>
                           </form>

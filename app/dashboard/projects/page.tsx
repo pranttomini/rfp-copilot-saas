@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Nav } from '@/components/Nav';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { formatDateTime } from '@/lib/formatDate';
 
 export default async function ProjectsPage() {
   const user = await requireUser();
@@ -42,7 +43,7 @@ export default async function ProjectsPage() {
                     <div className="text-xs text-slate-500 mt-1">{p.description || 'Ohne Beschreibung'}</div>
                   </td>
                   <td className="px-6 py-4 text-slate-700">{p.requirements.length}</td>
-                  <td className="px-6 py-4 text-sm text-slate-500">{new Date(p.updatedAt).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-sm text-slate-500">{formatDateTime(p.updatedAt)}</td>
                 </tr>
               ))}
               {!projects.length && (
