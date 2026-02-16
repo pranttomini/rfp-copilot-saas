@@ -20,16 +20,19 @@ function progressChip(label: string, value: number, tone: 'slate' | 'blue' | 'gr
   return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${tones[tone]}`}>{label}: {value}</span>;
 }
 
+const statusFilters = ['ALL', 'OPEN', 'TODO', 'DRAFTED', 'REVIEWED', 'SUBMITTED'] as const;
+type StatusFilter = (typeof statusFilters)[number];
+
 export default async function ProjectDetails({
   params,
   searchParams
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ toast?: string; message?: string }>;
+  searchParams: Promise<{ toast?: string; message?: string; status?: string }>;
 }) {
   const user = await requireUser();
   const { id } = await params;
-  const { toast, message } = await searchParams;
+  const { toast, message, status } = await searchParams;
 
   const project = await prisma.project.findFirst({
     where: { id, ownerId: user.id },
@@ -44,6 +47,25 @@ export default async function ProjectDetails({
   const submitted = project.requirements.filter((r) => r.status === 'SUBMITTED').length;
   const doneCount = reviewed + submitted;
   const progressPercent = total ? Math.round((doneCount / total) * 100) : 0;
+
+  const selectedFilter: StatusFilter = statusFilters.includes((status || '').toUpperCase() as StatusFilter)
+    ? ((status || '').toUpperCase() as StatusFilter)
+    : 'ALL';
+
+  const filterCounts: Record<StatusFilter, number> = {
+    ALL: total,
+    OPEN: project.requirements.filter((r) => r.status !== 'SUBMITTED').length,
+    TODO: project.requirements.filter((r) => r.status === 'TODO').length,
+    DRAFTED: project.requirements.filter((r) => r.status === 'DRAFTED').length,
+    REVIEWED: project.requirements.filter((r) => r.status === 'REVIEWED').length,
+    SUBMITTED: submitted
+  };
+
+  const filteredRequirements = project.requirements.filter((r) => {
+    if (selectedFilter === 'ALL') return true;
+    if (selectedFilter === 'OPEN') return r.status !== 'SUBMITTED';
+    return r.status === selectedFilter;
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -154,9 +176,34 @@ export default async function ProjectDetails({
             </div>
           ) : (
             <section className="bg-surface-light shadow-sm rounded-xl border border-slate-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-slate-200">
-                <h3 className="text-lg font-semibold text-slate-900">3) Anforderungen bearbeiten</h3>
-                <p className="text-sm text-slate-500">Status pflegen und Drafts finalisieren.</p>
+              <div className="px-6 py-4 border-b border-slate-200 space-y-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">3) Anforderungen bearbeiten</h3>
+                  <p className="text-sm text-slate-500">Status pflegen und Drafts finalisieren.</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {statusFilters.map((filter) => {
+                    const active = filter === selectedFilter;
+                    const href = filter === 'ALL'
+                      ? `/dashboard/projects/${project.id}`
+                      : `/dashboard/projects/${project.id}?status=${filter}`;
+
+                    return (
+                      <Link
+                        key={filter}
+                        href={href}
+                        className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium ${
+                          active
+                            ? 'border-primary bg-primary/10 text-primary'
+                            : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                        }`}
+                      >
+                        {filter}
+                        <span className="text-[11px] text-slate-500">({filterCounts[filter]})</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200">
@@ -169,7 +216,7 @@ export default async function ProjectDetails({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {project.requirements.map((r) => (
+                    {filteredRequirements.map((r) => (
                       <tr key={r.id} className="hover:bg-slate-50/70 align-top">
                         <td className="px-5 py-4 text-sm text-slate-900 max-w-2xl">
                           <div className="font-medium">{r.title}</div>
@@ -202,6 +249,13 @@ export default async function ProjectDetails({
                         </td>
                       </tr>
                     ))}
+                    {!filteredRequirements.length && (
+                      <tr>
+                        <td colSpan={4} className="px-5 py-8 text-center text-sm text-slate-500">
+                          Keine Anforderungen für den Filter <span className="font-medium">{selectedFilter}</span>.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
