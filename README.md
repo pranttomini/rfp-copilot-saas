@@ -58,6 +58,18 @@ npm run start
 5. Open Answer Library and add new entry
 6. Delete the entry again
 
+## Health check
+
+- Endpoint: `GET /api/health`
+- Returns `200` (`status: ok`) when app + DB are healthy
+- Returns `503` (`status: degraded`) when DB check fails
+
+Quick probe:
+
+```bash
+curl -fsS http://localhost:3000/api/health
+```
+
 ## Environment
 
 - `DATABASE_URL` - Prisma database URL
