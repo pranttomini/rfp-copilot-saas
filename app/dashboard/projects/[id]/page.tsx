@@ -4,6 +4,7 @@ import { Nav } from '@/components/Nav';
 import { SubmitButton } from '@/components/SubmitButton';
 import { requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { statusClasses } from '@/lib/status';
 
 function priorityClass(priority: string) {
   if (priority.toLowerCase().includes('high')) return 'bg-red-100 text-red-700';
@@ -96,7 +97,7 @@ export default async function ProjectDetails({
           <section className="bg-surface-light rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-2xl font-semibold text-slate-900 mr-1">{project.name}</h1>
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">{project.status}</span>
+              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${statusClasses(project.status)}`}>{project.status}</span>
               {progressChip('Anforderungen', total)}
               {progressChip('Drafted', drafted, 'blue')}
               {progressChip('Fertig', doneCount, 'green')}
