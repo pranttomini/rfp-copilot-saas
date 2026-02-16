@@ -12,7 +12,7 @@ Production-minded prototype for managing RFP responses with fast drafting suppor
 
 - User auth (register/login/logout)
 - Dashboard with project creation and KPIs
-- Project detail with RFP upload (`.txt`, `.md`, `.docx`, `.pdf`), requirement extraction, draft generation
+- Project detail with RFP upload (`.txt`, `.md`, `.docx`, `.pdf`, max 15 MB), requirement extraction, draft generation
 - Answer Library CRUD (create/delete snippets + search)
 - Requirement status tracking (`TODO`, `DRAFTED`, `REVIEWED`, `SUBMITTED`)
 - Demo seed account

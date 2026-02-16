@@ -9,6 +9,8 @@ import { extractTextFromUpload } from '@/lib/file-extract';
 import { clearLoginRateLimit, checkLoginRateLimit } from '@/lib/login-rate-limit';
 import { generateDraft, parseRfpText } from '@/lib/rfp-parser';
 
+const MAX_UPLOAD_SIZE_BYTES = 15 * 1024 * 1024;
+
 function go(path: string, type: 'success' | 'error', message: string): never {
   redirect(`${path}?${new URLSearchParams({ toast: type, message }).toString()}`);
 }
@@ -183,6 +185,10 @@ export async function uploadRfpAction(formData: FormData) {
   if (!project) go('/dashboard', 'error', 'Projekt nicht gefunden oder keine Berechtigung.');
 
   const selectedFile = file && file.name ? file : go(`/dashboard/projects/${projectId}`, 'error', 'Bitte eine Datei auswählen.');
+
+  if (selectedFile.size > MAX_UPLOAD_SIZE_BYTES) {
+    go(`/dashboard/projects/${projectId}`, 'error', 'Datei ist zu groß. Maximal 15 MB erlaubt.');
+  }
 
   const allowedExtensions = ['.md', '.txt', '.docx', '.pdf'];
   const lowerName = selectedFile.name.toLowerCase();

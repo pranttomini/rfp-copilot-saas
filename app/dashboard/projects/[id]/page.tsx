@@ -133,7 +133,7 @@ export default async function ProjectDetails({
                   </div>
                   <div>
                     <h3 className="text-base font-semibold text-slate-900">1) RFP hochladen</h3>
-                    <p className="text-sm text-slate-500">Unterstützt: .txt, .md, .docx, .pdf (Basis-Extraktion mit Fallback).</p>
+                    <p className="text-sm text-slate-500">Unterstützt: .txt, .md, .docx, .pdf (max. 15 MB, Basis-Extraktion mit Fallback).</p>
                   </div>
                 </div>
                 <form action={uploadRfpAction} className="space-y-3">
