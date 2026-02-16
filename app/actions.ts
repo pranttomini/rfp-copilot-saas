@@ -237,12 +237,15 @@ export async function generateDraftsAction(formData: FormData) {
     prisma.answer.findMany({ where: { ownerId: user.id } })
   ]);
 
-  for (const req of requirements) {
-    const draft = generateDraft(req.details, answers);
-    await prisma.projectRequirement.update({
-      where: { id: req.id },
-      data: { draftAnswer: draft, status: 'DRAFTED' }
-    });
+  if (requirements.length) {
+    const draftUpdates = requirements.map((req) =>
+      prisma.projectRequirement.update({
+        where: { id: req.id },
+        data: { draftAnswer: generateDraft(req.details, answers), status: 'DRAFTED' }
+      })
+    );
+
+    await prisma.$transaction(draftUpdates);
   }
 
   await prisma.project.update({ where: { id: projectId }, data: { status: requirements.length ? 'Drafting' : 'Parsed' } });
