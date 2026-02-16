@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { clearSession, login, register, requireUser } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { extractTextFromUpload } from '@/lib/file-extract';
+import { clearLoginRateLimit, checkLoginRateLimit } from '@/lib/login-rate-limit';
 import { generateDraft, parseRfpText } from '@/lib/rfp-parser';
 
 function go(path: string, type: 'success' | 'error', message: string): never {
@@ -51,9 +52,16 @@ export async function loginAction(formData: FormData) {
     ? parsed.data
     : go('/login', 'error', parsed.error.issues[0]?.message || 'Ungültige Eingabe.');
 
+  const rateLimit = checkLoginRateLimit(data.email);
+  if (!rateLimit.allowed) {
+    const retryAfterMinutes = Math.max(1, Math.ceil(rateLimit.retryAfterMs / 60_000));
+    go('/login', 'error', `Zu viele Login-Versuche. Bitte in ${retryAfterMinutes} Minute(n) erneut versuchen.`);
+  }
+
   const user = await login(data.email, data.password);
   if (!user) go('/login', 'error', 'Ungültige Zugangsdaten.');
 
+  clearLoginRateLimit(data.email);
   go('/dashboard', 'success', 'Erfolgreich eingeloggt.');
 }
 

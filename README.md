@@ -63,3 +63,5 @@ npm run start
 - `DATABASE_URL` - Prisma database URL
 - `APP_URL` - app URL
 - `SESSION_SECRET` - strong random secret in production
+- `LOGIN_RATE_LIMIT_MAX_ATTEMPTS` - max failed login attempts per window (default: 8)
+- `LOGIN_RATE_LIMIT_WINDOW_MS` - lockout window in ms (default: 600000 = 10 min)
